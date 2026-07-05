@@ -11,6 +11,7 @@
   --border-strong: #cbd5e1;
   --drawer-fill: #fefdf9;
   --drawer-stroke: #334155;
+  --wall-fill: #cbd5e1;
   --divider: #475569;
   --divider-hover: #6366f1;
   --grid: #e2e8f0;
@@ -41,8 +42,8 @@ header {
   background: var(--panel);
   border-bottom: 1px solid var(--border);
   display: flex;
-  align-items: baseline;
-  gap: 12px;
+  align-items: center;
+  gap: 16px;
 }
 header h1 {
   margin: 0;
@@ -54,18 +55,233 @@ header .subtitle {
   color: var(--muted);
   font-size: 13px;
 }
+.header-actions {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.step-indicator {
+  display: flex;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: step;
+}
+.step-indicator li {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px 5px 8px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--muted);
+  background: transparent;
+  border-radius: 999px;
+  counter-increment: step;
+}
+.step-indicator li::before {
+  content: counter(step);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px; height: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  border-radius: 50%;
+  background: #e2e8f0;
+  color: var(--muted);
+}
+.step-indicator li.active {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+.step-indicator li.active::before {
+  background: var(--accent);
+  color: #fff;
+}
+.step-indicator li.done { color: var(--ink); }
+.step-indicator li.done::before {
+  background: var(--accent);
+  color: #fff;
+  content: "✓";
+}
+
+button.ghost {
+  background: transparent;
+  border-color: transparent;
+  color: var(--muted);
+  padding: 6px 12px;
+}
+button.ghost:hover:not(:disabled) {
+  background: var(--accent-soft);
+  border-color: transparent;
+  color: var(--accent);
+}
+button.link {
+  background: transparent;
+  border: none;
+  padding: 4px 0;
+  color: var(--accent);
+  font-size: 12px;
+  text-align: left;
+  cursor: pointer;
+}
+button.link:hover { text-decoration: underline; color: var(--accent-hover); background: transparent; }
+button.large {
+  padding: 11px 18px;
+  font-size: 14px;
+  font-weight: 600;
+}
 
 main {
-  display: grid;
-  grid-template-columns: 300px 1fr;
-  height: calc(100vh - 51px);
+  height: calc(100vh - 55px);
+  overflow: hidden;
 }
+
+.wizard-step { display: none; height: 100%; }
+.wizard-step.active { display: grid; }
+#step-1.active, #step-3.active {
+  grid-template-columns: 1fr;
+  place-items: start center;
+  overflow-y: auto;
+  padding: 40px 20px;
+  background:
+    radial-gradient(circle at 20% 20%, rgba(99, 102, 241, 0.04), transparent 50%),
+    radial-gradient(circle at 80% 80%, rgba(99, 102, 241, 0.03), transparent 50%),
+    var(--bg);
+}
+#step-2.active {
+  grid-template-columns: 320px 1fr;
+}
+
+.wizard-card {
+  width: 100%;
+  max-width: 640px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 32px;
+  box-shadow: var(--shadow);
+}
+.wizard-card h2 {
+  margin: 0 0 8px;
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+  text-transform: none;
+}
+.wizard-card .lede {
+  color: var(--muted);
+  font-size: 13px;
+  margin: 0 0 20px;
+  line-height: 1.5;
+}
+.wizard-card label.block {
+  display: block;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--muted);
+  margin-bottom: 12px;
+}
+.wizard-card textarea {
+  display: block;
+  width: 100%;
+  margin-top: 5px;
+  padding: 12px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 12px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  background: #f8fafc;
+  color: var(--ink);
+  white-space: pre;
+  overflow: auto;
+  resize: vertical;
+}
+.wizard-card .btn-row { margin-top: 16px; }
+.wizard-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 24px;
+}
+.wizard-actions .hint { max-width: 60%; margin: 0; }
+
+.measure-diagram {
+  margin: 16px 0 24px;
+  padding: 20px;
+  background: #f8fafc;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+}
+.measure-diagram svg { display: block; width: 100%; height: auto; max-height: 220px; }
+.diagram-caption { margin: 12px 0 0; text-align: center; }
+
+.measure-inputs {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+}
+.measure-inputs .input-group label {
+  display: block;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+.measure-inputs input[type="number"] {
+  display: block;
+  width: 100%;
+  padding: 8px 10px;
+  font-size: 14px;
+  font-family: inherit;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  background: #fff;
+  color: var(--ink);
+}
+.measure-inputs input:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+}
+
+.drawer-summary {
+  margin: 0 0 10px;
+  padding: 10px 12px;
+  background: var(--accent-soft);
+  border-radius: var(--radius-sm);
+  color: var(--ink);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.import-block {
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border);
+}
+.import-block summary {
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--accent);
+  margin-bottom: 12px;
+}
+.import-block summary:hover { color: var(--accent-hover); }
 
 aside#controls {
   background: var(--panel);
   border-right: 1px solid var(--border);
   padding: 20px 20px 40px;
   overflow-y: auto;
+  display: flex;
+  flex-direction: column;
 }
 aside section {
   margin-bottom: 24px;

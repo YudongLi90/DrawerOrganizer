@@ -10,81 +10,165 @@
   <header>
     <h1>Drawer Organizer Designer</h1>
     <span class="subtitle">Design custom drawer dividers · Export a code to share</span>
+    <div class="header-actions">
+      <ol class="step-indicator" aria-label="Progress">
+        <li data-step="1" class="active">Measure</li>
+        <li data-step="2">Design</li>
+        <li data-step="3">Copy code</li>
+      </ol>
+    </div>
   </header>
 
   <main>
-    <aside id="controls">
-      <section>
-        <h2>Drawer</h2>
-        <label>Units</label>
-        <div id="in-unit" class="unit-toggle" role="radiogroup" aria-label="Units" data-value="mm">
-          <button type="button" class="active" data-unit-value="mm" role="radio" aria-checked="true">mm</button>
-          <button type="button" data-unit-value="in" role="radio" aria-checked="false">inch</button>
-        </div>
-        <label>Length L <span class="unit-suffix" data-unit>mm</span>
-          <input type="number" id="in-L" step="0.1" value="300" />
-        </label>
-        <label>Width W <span class="unit-suffix" data-unit>mm</span>
-          <input type="number" id="in-W" step="0.1" value="200" />
-        </label>
-        <label>Height H <span class="unit-suffix" data-unit>mm</span>
-          <input type="number" id="in-H" step="0.1" value="50" />
-        </label>
-      </section>
-
-      <section id="selection">
-        <h2>Selection</h2>
-        <div id="sel-info">Click a cell in the canvas to select it.</div>
-        <div class="dim-row">
-          <label for="sel-w">Width <span class="unit-suffix" data-unit>mm</span></label>
-          <input type="number" id="sel-w" step="0.1" />
-          <div id="sel-w-fixed" class="fixed-value" hidden></div>
-        </div>
-        <div class="dim-row">
-          <label for="sel-h">Height <span class="unit-suffix" data-unit>mm</span></label>
-          <input type="number" id="sel-h" step="0.1" />
-          <div id="sel-h-fixed" class="fixed-value" hidden></div>
-        </div>
-        <div class="btn-row horizontal">
-          <button id="btn-split-v" disabled title="Split with a vertical divider">Split ↔</button>
-          <button id="btn-split-h" disabled title="Split with a horizontal divider">Split ↕</button>
-        </div>
-        <div class="btn-row">
-          <button id="btn-remove-split" disabled class="danger" title="Remove the split at this cell">Remove split</button>
-        </div>
-      </section>
-
-      <section>
-        <h2>Design code</h2>
-        <label>Export
-          <textarea id="tx-export" readonly rows="12"></textarea>
-        </label>
-        <div class="btn-row horizontal">
-          <button id="btn-copy" class="primary">Copy</button>
-          <button id="btn-reset">Reset</button>
-        </div>
-        <label style="margin-top: 16px;">Import
-          <textarea id="tx-import" rows="6" placeholder="Paste a design code..."></textarea>
-        </label>
-        <div class="btn-row">
-          <button id="btn-import">Load design</button>
-        </div>
-        <p class="hint" id="import-msg"></p>
-      </section>
-
-      <section>
-        <h2>Tips</h2>
-        <p class="hint">
-          Click a cell to select it. Drag any divider to resize.
-          Click a <kbd>W</kbd> or <kbd>H</kbd> label in the canvas to type an exact size.
+    <!-- STEP 1: Measure ------------------------------------------------------ -->
+    <section id="step-1" class="wizard-step active">
+      <div class="wizard-card">
+        <h2>Measure your drawer</h2>
+        <p class="lede">
+          Measure the <strong>inside</strong> of the empty drawer — not the outside.
+          The organizer sits inside, so wall-to-wall inner dimensions matter.
         </p>
-      </section>
-    </aside>
 
-    <div id="canvas-wrap">
-      <svg id="canvas" xmlns="http://www.w3.org/2000/svg"></svg>
-      <input id="canvas-editor" type="number" step="0.1" hidden />
-    </div>
+        <div class="measure-diagram" aria-hidden="true">
+          <svg viewBox="0 0 520 220" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <marker id="arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+                <path d="M0 0 L10 5 L0 10 z" fill="#6366f1"/>
+              </marker>
+            </defs>
+            <!-- Top view -->
+            <g transform="translate(20 20)">
+              <text x="105" y="-4" text-anchor="middle" font-size="11" font-weight="600" fill="#64748b">Top view</text>
+              <rect x="0" y="0" width="210" height="160" rx="4" fill="#cbd5e1" stroke="#334155" stroke-width="1.5"/>
+              <rect x="14" y="14" width="182" height="132" rx="2" fill="#fefdf9" stroke="#94a3b8" stroke-width="1" stroke-dasharray="3 2"/>
+              <!-- W (horizontal, top) -->
+              <line x1="14" y1="8" x2="196" y2="8" stroke="#6366f1" stroke-width="1.5" marker-start="url(#arr)" marker-end="url(#arr)"/>
+              <text x="105" y="5" text-anchor="middle" font-size="11" fill="#4f46e5" font-weight="600">W (width)</text>
+              <!-- L (vertical, right) -->
+              <line x1="202" y1="14" x2="202" y2="146" stroke="#6366f1" stroke-width="1.5" marker-start="url(#arr)" marker-end="url(#arr)"/>
+              <text x="206" y="80" text-anchor="middle" font-size="11" fill="#4f46e5" font-weight="600" transform="rotate(90 206 80)">L (length)</text>
+            </g>
+            <!-- Side view -->
+            <g transform="translate(280 20)">
+              <text x="110" y="-4" text-anchor="middle" font-size="11" font-weight="600" fill="#64748b">Side view</text>
+              <rect x="0" y="30" width="220" height="130" rx="4" fill="#cbd5e1" stroke="#334155" stroke-width="1.5"/>
+              <rect x="14" y="44" width="192" height="102" rx="2" fill="#fefdf9" stroke="#94a3b8" stroke-width="1" stroke-dasharray="3 2"/>
+              <!-- H (vertical) -->
+              <line x1="212" y1="44" x2="212" y2="146" stroke="#6366f1" stroke-width="1.5" marker-start="url(#arr)" marker-end="url(#arr)"/>
+              <text x="220" y="95" text-anchor="middle" font-size="11" fill="#4f46e5" font-weight="600" transform="rotate(90 220 95)">H (depth)</text>
+            </g>
+          </svg>
+          <p class="hint diagram-caption">
+            <strong>L</strong> = inside length · <strong>W</strong> = inside width · <strong>H</strong> = inside depth (top of drawer to bottom).
+          </p>
+        </div>
+
+        <div class="measure-inputs">
+          <div class="input-group">
+            <label>Units</label>
+            <div id="in-unit" class="unit-toggle" role="radiogroup" aria-label="Units" data-value="mm">
+              <button type="button" class="active" data-unit-value="mm" role="radio" aria-checked="true">mm</button>
+              <button type="button" data-unit-value="in" role="radio" aria-checked="false">inch</button>
+            </div>
+          </div>
+          <div class="input-group">
+            <label for="in-L">Length L <span class="unit-suffix" data-unit>mm</span></label>
+            <input type="number" id="in-L" step="0.1" value="300" />
+          </div>
+          <div class="input-group">
+            <label for="in-W">Width W <span class="unit-suffix" data-unit>mm</span></label>
+            <input type="number" id="in-W" step="0.1" value="200" />
+          </div>
+          <div class="input-group">
+            <label for="in-H">Depth H <span class="unit-suffix" data-unit>mm</span></label>
+            <input type="number" id="in-H" step="0.1" value="50" />
+          </div>
+        </div>
+
+        <div class="wizard-actions">
+          <span class="hint">Not sure? Round down a millimeter or two — the organizer needs to slide in.</span>
+          <button type="button" id="btn-next-1" class="primary large">Continue →</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- STEP 2: Design ------------------------------------------------------- -->
+    <section id="step-2" class="wizard-step">
+      <aside id="controls">
+        <section>
+          <h2>Drawer</h2>
+          <p class="hint drawer-summary" id="drawer-summary"></p>
+          <button type="button" id="btn-back-2" class="link">← Change dimensions</button>
+        </section>
+
+        <section id="selection">
+          <h2>Selection</h2>
+          <div id="sel-info">Click a cell in the canvas to select it.</div>
+          <div class="dim-row">
+            <label for="sel-w">Width <span class="unit-suffix" data-unit>mm</span></label>
+            <input type="number" id="sel-w" step="0.1" />
+            <div id="sel-w-fixed" class="fixed-value" hidden></div>
+          </div>
+          <div class="dim-row">
+            <label for="sel-h">Height <span class="unit-suffix" data-unit>mm</span></label>
+            <input type="number" id="sel-h" step="0.1" />
+            <div id="sel-h-fixed" class="fixed-value" hidden></div>
+          </div>
+          <div class="btn-row horizontal">
+            <button id="btn-split-v" disabled title="Split with a vertical divider">Split ↔</button>
+            <button id="btn-split-h" disabled title="Split with a horizontal divider">Split ↕</button>
+          </div>
+          <div class="btn-row">
+            <button id="btn-remove-split" disabled class="danger" title="Remove the split at this cell">Remove split</button>
+          </div>
+        </section>
+
+        <section>
+          <h2>Tips</h2>
+          <p class="hint">
+            Click a cell to select it. Drag any divider to resize.
+            Click a <kbd>W</kbd> or <kbd>H</kbd> label in the canvas to type an exact size.
+          </p>
+        </section>
+
+        <div class="btn-row">
+          <button type="button" id="btn-next-2" class="primary large">Get design code →</button>
+        </div>
+      </aside>
+
+      <div id="canvas-wrap">
+        <svg id="canvas" xmlns="http://www.w3.org/2000/svg"></svg>
+        <input id="canvas-editor" type="number" step="0.1" hidden />
+      </div>
+    </section>
+
+    <!-- STEP 3: Copy code ---------------------------------------------------- -->
+    <section id="step-3" class="wizard-step">
+      <div class="wizard-card">
+        <h2>Your design code</h2>
+        <p class="lede">Copy this and paste it wherever you're submitting the design.</p>
+
+        <label class="block">Design code
+          <textarea id="tx-export" readonly rows="16"></textarea>
+        </label>
+        <div class="btn-row horizontal">
+          <button id="btn-copy" class="primary">Copy code</button>
+          <button id="btn-back-3" type="button">← Back to editing</button>
+          <button id="btn-reset">Start over</button>
+        </div>
+
+        <details class="import-block">
+          <summary>Load an existing design code</summary>
+          <label class="block">Paste code
+            <textarea id="tx-import" rows="6" placeholder="Paste a design code..."></textarea>
+          </label>
+          <div class="btn-row">
+            <button id="btn-import">Load design</button>
+          </div>
+          <p class="hint" id="import-msg"></p>
+        </details>
+      </div>
+    </section>
   </main>
 
   <script type="module" src="src/app.js"></script>

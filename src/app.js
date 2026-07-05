@@ -294,6 +294,7 @@ btnReset.addEventListener("click", () => {
   });
   selectedId = null;
   redraw();
+  goToStep(1);
 });
 
 btnImport.addEventListener("click", () => {
@@ -330,3 +331,60 @@ function flashButton(btn, label) {
 
 updateUnitDisplay();
 requestAnimationFrame(redraw);
+
+// --- Wizard step navigation ----------------------------------------------------
+
+const stepEls = {
+  1: document.getElementById("step-1"),
+  2: document.getElementById("step-2"),
+  3: document.getElementById("step-3"),
+};
+const stepIndicators = document.querySelectorAll(".step-indicator li");
+const drawerSummary = document.getElementById("drawer-summary");
+const btnNext1 = document.getElementById("btn-next-1");
+const btnNext2 = document.getElementById("btn-next-2");
+const btnBack2 = document.getElementById("btn-back-2");
+const btnBack3 = document.getElementById("btn-back-3");
+
+let currentStep = 1;
+
+function goToStep(n) {
+  currentStep = n;
+  for (const [k, el] of Object.entries(stepEls)) {
+    el.classList.toggle("active", Number(k) === n);
+  }
+  for (const li of stepIndicators) {
+    const s = Number(li.dataset.step);
+    li.classList.toggle("active", s === n);
+    li.classList.toggle("done", s < n);
+  }
+  if (n === 2) {
+    updateDrawerSummary();
+    // Re-render because the canvas was hidden and needs new dimensions.
+    requestAnimationFrame(redraw);
+  }
+  if (n === 3) updateExport();
+}
+
+function updateDrawerSummary() {
+  const uLabel = UNITS[unit].label;
+  drawerSummary.innerHTML =
+    `L <strong>${format(design.drawer.L, unit)}</strong> · ` +
+    `W <strong>${format(design.drawer.W, unit)}</strong> · ` +
+    `H <strong>${format(design.drawer.H, unit)}</strong> ${uLabel}`;
+}
+
+btnNext1.addEventListener("click", () => {
+  const L = readInputMm(inputs.L);
+  const W = readInputMm(inputs.W);
+  const H = readInputMm(inputs.H);
+  if (!Number.isFinite(L) || !Number.isFinite(W) || !Number.isFinite(H) || L <= 0 || W <= 0 || H <= 0) {
+    inputs.L.reportValidity?.();
+    return;
+  }
+  setDrawer(design, { L, W, H });
+  goToStep(2);
+});
+btnNext2.addEventListener("click", () => goToStep(3));
+btnBack2.addEventListener("click", () => goToStep(1));
+btnBack3.addEventListener("click", () => goToStep(2));

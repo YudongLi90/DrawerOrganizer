@@ -56,21 +56,32 @@ export function render(svg, design, { selectedId = null, unit = "mm" } = {}) {
   const gRoot = el("g", { transform: `translate(${VIEWPORT_PADDING}, ${VIEWPORT_PADDING})` });
   svg.appendChild(gRoot);
 
-  // Drawer outline with subtle grid fill.
+  // Drawer outline (outer, painted like the walls themselves).
   gRoot.appendChild(el("rect", {
     x: 0, y: 0,
     width: drawWpx, height: drawHpx,
-    fill: "var(--drawer-fill)",
+    fill: "var(--wall-fill)",
     stroke: "var(--drawer-stroke)",
     "stroke-width": 2,
     rx: 6,
   }));
+
+  // Inner usable area (drawer floor) — inset by wall thickness on all sides.
+  const tpxInner = design.dividerThickness * scale;
+  const innerX = tpxInner;
+  const innerY = tpxInner;
+  const innerW = Math.max(0, drawWpx - 2 * tpxInner);
+  const innerH = Math.max(0, drawHpx - 2 * tpxInner);
   gRoot.appendChild(el("rect", {
-    x: 0, y: 0,
-    width: drawWpx, height: drawHpx,
+    x: innerX, y: innerY,
+    width: innerW, height: innerH,
+    fill: "var(--drawer-fill)",
+  }));
+  gRoot.appendChild(el("rect", {
+    x: innerX, y: innerY,
+    width: innerW, height: innerH,
     fill: "url(#grid-pattern)",
     "pointer-events": "none",
-    rx: 6,
   }));
 
   // Recursively render cells

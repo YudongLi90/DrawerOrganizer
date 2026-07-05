@@ -5,12 +5,14 @@ let idCounter = 0;
 export const nextId = () => `c${++idCounter}`;
 
 export function makeDesign({ L = 300, W = 200, H = 50, dividerThickness = 3 } = {}) {
+  const t = dividerThickness;
   return {
     version: 1,
     drawer: { L, W, H },
     dividerThickness,
     // Canvas convention: W is horizontal (x-axis), L is vertical (y-axis).
-    root: makeLeaf(0, 0, W, L),
+    // Root is inset by `t` on all sides — outer walls are as thick as dividers.
+    root: makeLeaf(t, t, Math.max(0, W - 2 * t), Math.max(0, L - 2 * t)),
   };
 }
 
@@ -26,9 +28,11 @@ export function setDrawer(design, { L, W, H, dividerThickness }) {
   if (Number.isFinite(H)) design.drawer.H = H;
   if (Number.isFinite(dividerThickness)) design.dividerThickness = dividerThickness;
   const t = design.dividerThickness;
-  // Root always spans the full drawer.
-  remapSubtree(design.root, "x", 0, design.drawer.W, t);
-  remapSubtree(design.root, "y", 0, design.drawer.L, t);
+  // Root spans the drawer minus outer walls of thickness `t` on each side.
+  const innerW = Math.max(0, design.drawer.W - 2 * t);
+  const innerL = Math.max(0, design.drawer.L - 2 * t);
+  remapSubtree(design.root, "x", t, innerW, t);
+  remapSubtree(design.root, "y", t, innerL, t);
   return design;
 }
 
