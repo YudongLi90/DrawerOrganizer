@@ -65,11 +65,13 @@ function updateSelectionUI() {
   btnSplitH.disabled = !isLeaf;
   btnRemoveSplit.disabled = !isSplit;
   const uLabel = UNITS[unit].label;
+  const hint = `<div class="hint">Click a cell in the canvas to select it.</div>`;
   if (cell) {
     const kind = isSplit ? "split cell" : "leaf";
-    selInfo.innerHTML = `<strong>${cell.id}</strong> · ${kind} · ${format(cell.w, unit)} × ${format(cell.h, unit)} ${uLabel}`;
+    selInfo.innerHTML =
+      `<strong>${cell.id}</strong> · ${kind} · ${format(cell.w, unit)} × ${format(cell.h, unit)} ${uLabel}${hint}`;
   } else {
-    selInfo.textContent = "Click a cell in the canvas to select it.";
+    selInfo.innerHTML = hint;
   }
   applyDimField(selW, selWFixed, cell, isLeaf ? canResize(design, cell.id, "x") : false, cell?.w, uLabel);
   applyDimField(selH, selHFixed, cell, isLeaf ? canResize(design, cell.id, "y") : false, cell?.h, uLabel);
@@ -250,16 +252,32 @@ canvasEditor.addEventListener("blur", () => { if (editorContext) commitCanvasEdi
 
 btnSplitV.addEventListener("click", () => {
   if (!selectedId) return;
-  if (splitCell(design, selectedId, "vertical")) { selectedId = null; redraw(); }
+  const parent = findCell(design.root, selectedId);
+  if (splitCell(design, selectedId, "vertical")) {
+    // Vertical split → left/right children; select the left (first) child.
+    selectedId = parent.split.children[0].id;
+    redraw();
+  }
 });
 btnSplitH.addEventListener("click", () => {
   if (!selectedId) return;
-  if (splitCell(design, selectedId, "horizontal")) { selectedId = null; redraw(); }
+  const parent = findCell(design.root, selectedId);
+  if (splitCell(design, selectedId, "horizontal")) {
+    // Horizontal split → top/bottom children; select the top (first) child.
+    selectedId = parent.split.children[0].id;
+    redraw();
+  }
 });
 btnRemoveSplit.addEventListener("click", () => {
   if (!selectedId) return;
-  if (removeSplit(design, selectedId)) redraw();
+  if (removeSplit(design, selectedId)) { autoSelectIfSingleLeaf(); redraw(); }
 });
+
+// If the design has only one leaf cell (the root), select it automatically —
+// there's no ambiguity about what the user wants to act on.
+function autoSelectIfSingleLeaf() {
+  if (!design.root.split) selectedId = design.root.id;
+}
 
 function commitSelDim(axis, inputEl) {
   if (!selectedId) return;
@@ -293,6 +311,7 @@ btnReset.addEventListener("click", () => {
     dividerThickness: CONFIG.dividerThickness,
   });
   selectedId = null;
+  autoSelectIfSingleLeaf();
   redraw();
   goToStep(1);
 });
@@ -304,6 +323,7 @@ btnImport.addEventListener("click", () => {
     const loaded = decode(raw);
     design = loaded;
     selectedId = null;
+    autoSelectIfSingleLeaf();
     writeInputFromMm(inputs.L, design.drawer.L);
     writeInputFromMm(inputs.W, design.drawer.W);
     writeInputFromMm(inputs.H, design.drawer.H);
@@ -330,6 +350,7 @@ function flashButton(btn, label) {
 }
 
 updateUnitDisplay();
+autoSelectIfSingleLeaf();
 requestAnimationFrame(redraw);
 
 // --- Wizard step navigation ----------------------------------------------------
@@ -374,17 +395,37 @@ function updateDrawerSummary() {
     `H <strong>${format(design.drawer.H, unit)}</strong> ${uLabel}`;
 }
 
-btnNext1.addEventListener("click", () => {
+function commitDimensionsFromInputs() {
   const L = readInputMm(inputs.L);
   const W = readInputMm(inputs.W);
   const H = readInputMm(inputs.H);
   if (!Number.isFinite(L) || !Number.isFinite(W) || !Number.isFinite(H) || L <= 0 || W <= 0 || H <= 0) {
     inputs.L.reportValidity?.();
-    return;
+    return false;
   }
   setDrawer(design, { L, W, H });
-  goToStep(2);
+  return true;
+}
+
+btnNext1.addEventListener("click", () => {
+  if (commitDimensionsFromInputs()) goToStep(2);
 });
 btnNext2.addEventListener("click", () => goToStep(3));
 btnBack2.addEventListener("click", () => goToStep(1));
 btnBack3.addEventListener("click", () => goToStep(2));
+
+// Clickable step indicator: navigate to any step. Forward navigation from
+// step 1 commits the current dimension inputs first.
+for (const li of stepIndicators) {
+  li.addEventListener("click", () => {
+    const target = Number(li.dataset.step);
+    if (target === currentStep) return;
+    if (currentStep === 1 && target > 1) {
+      if (!commitDimensionsFromInputs()) return;
+    }
+    goToStep(target);
+  });
+  li.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" || e.key === " ") { e.preventDefault(); li.click(); }
+  });
+}
