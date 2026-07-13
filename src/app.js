@@ -3,6 +3,7 @@ import { render } from "./render.js";
 import { CONFIG } from "./config.js";
 import { UNITS, format } from "./units.js";
 import { encode, decode } from "./codec.js";
+import { fetchTier, QuoteError } from "./estimate.js";
 
 const svg = document.getElementById("canvas");
 const inputs = {
@@ -54,6 +55,7 @@ let currentScale = 1;
 function redraw() {
   currentScale = render(svg, design, { selectedId, unit });
   updateSelectionUI();
+  updateEstimate();
   updateExport();
 }
 
@@ -109,6 +111,83 @@ function updateUnitDisplay() {
 
 function updateExport() {
   txExport.value = encode(design);
+}
+
+// --- Estimator ----------------------------------------------------------------
+// Server-backed: fires a debounced request to /quote-tier and renders the
+// returned tier. Slicing takes many seconds on first request, so requests
+// are heavily debounced and superseded by newer edits.
+
+const estOut = {
+  section: document.getElementById("estimate-section"),
+  badge: document.getElementById("est-tier"),
+  label: document.getElementById("est-tier-label"),
+  bar:   document.getElementById("est-tier-bar"),
+};
+
+const ESTIMATE_DEBOUNCE_MS = 600;
+let estimateTimer = null;
+let estimateCtrl = null;
+let estimateSeq = 0;
+
+function setEstimateState(state, { tier = null, label = "", index = 0, count = 6 } = {}) {
+  const { badge, label: labelEl, bar, section } = estOut;
+  if (!badge || !labelEl || !bar) return;
+  section?.classList.remove("is-loading", "is-error", "is-ok");
+  if (state === "loading") {
+    section?.classList.add("is-loading");
+    badge.textContent = "…";
+    badge.removeAttribute("data-tier");
+    labelEl.textContent = "Getting quote…";
+    bar.style.width = "0%";
+  } else if (state === "error") {
+    section?.classList.add("is-error");
+    badge.textContent = "!";
+    badge.removeAttribute("data-tier");
+    labelEl.textContent = label || "Quote unavailable";
+    bar.style.width = "0%";
+  } else {
+    section?.classList.add("is-ok");
+    badge.textContent = tier;
+    badge.dataset.tier = tier;
+    labelEl.textContent = label;
+    // Discrete progress across tiers — the exact quote is server-only.
+    const pct = count > 0 ? ((index + 1) / count) * 100 : 0;
+    bar.style.width = pct.toFixed(1) + "%";
+  }
+}
+
+async function runEstimate() {
+  const mySeq = ++estimateSeq;
+  if (estimateCtrl) estimateCtrl.abort();
+  estimateCtrl = new AbortController();
+  setEstimateState("loading");
+  try {
+    const r = await fetchTier(encode(design), { signal: estimateCtrl.signal });
+    if (mySeq !== estimateSeq) return;
+    setEstimateState("ok", {
+      tier: r.tier,
+      label: r.tierLabel,
+      index: r.tierIndex,
+      count: r.tierCount,
+    });
+  } catch (e) {
+    if (mySeq !== estimateSeq) return;
+    if (e.name === "AbortError" || e.message === "request cancelled") return;
+    const msg = e instanceof QuoteError ? e.message : "quote failed";
+    setEstimateState("error", { label: `Quote unavailable — ${msg}` });
+  }
+}
+
+function scheduleEstimate() {
+  clearTimeout(estimateTimer);
+  // Estimate is only shown on step 2 — no point spending server work otherwise.
+  if (currentStep !== 2) return;
+  estimateTimer = setTimeout(runEstimate, ESTIMATE_DEBOUNCE_MS);
+}
+
+function updateEstimate() {
+  scheduleEstimate();
 }
 
 function onInputChange() {
@@ -383,6 +462,10 @@ function goToStep(n) {
     updateDrawerSummary();
     // Re-render because the canvas was hidden and needs new dimensions.
     requestAnimationFrame(redraw);
+    // Fire an immediate estimate — user just landed on this step and
+    // wants to see their tier without waiting for the debounce.
+    clearTimeout(estimateTimer);
+    runEstimate();
   }
   if (n === 3) updateExport();
 }

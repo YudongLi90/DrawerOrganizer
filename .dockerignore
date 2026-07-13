@@ -1,0 +1,34 @@
+# Keep the docker build context tight — image only needs the runtime code.
+
+# vcs / editor noise
+.git
+.gitignore
+.github
+.DS_Store
+.vscode
+.idea
+
+# frontend — not part of the server image
+node_modules
+dist
+scripts
+photos
+src
+index.html
+styles.css
+package*.json
+
+# python dev cruft
+**/__pycache__
+**/*.pyc
+**/.pytest_cache
+**/.venv
+stl-gen/.venv
+
+# server-side extras that aren't needed at runtime
+quote_server/deploy
+quote_server/tests
+quote_server/cache
+
+# calibration/reference data
+info

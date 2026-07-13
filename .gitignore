@@ -1,3 +1,12 @@
 stl-gen/
 node_modules/
 .DS_Store
+info/
+quote_server/
+dist/
+.pytest_cache/
+.venv/
+__pycache__/
+*.pyc
+.env
+.env.*

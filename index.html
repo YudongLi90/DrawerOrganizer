@@ -5,6 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Drawer Organizer Designer</title>
   <link rel="stylesheet" href="styles.css" />
+  <script>
+    // Quote server URL. Set this to your public quote server URL before
+    // deploying (e.g. "https://quote.example.com/quote-tier"). Left blank
+    // in the repo so no dev host is committed. When blank the tier fetch
+    // will fail and the panel will show "Quote unavailable".
+    window.QUOTE_URL = "https://drawerquote.yudongli.net/quote-tier";
+  </script>
 </head>
 <body>
   <header>
@@ -108,6 +115,20 @@
           <div class="btn-row">
             <button id="btn-remove-split" disabled class="danger" title="Remove the split at this cell">Remove split</button>
           </div>
+        </section>
+
+        <section id="estimate-section">
+          <h2>Size tier</h2>
+          <div class="estimate-tier">
+            <span class="estimate-tier-badge" id="est-tier" data-tier="S">S</span>
+            <span class="estimate-tier-label" id="est-tier-label">Small</span>
+          </div>
+          <div class="tier-bar-track">
+            <div class="tier-bar-fill" id="est-tier-bar" style="width:0%"></div>
+          </div>
+          <p class="hint estimate-note">
+            Based on drawer size and number of dividers. Choose the matching listing on Etsy.
+          </p>
         </section>
 
         <section>
